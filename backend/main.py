@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from .database import engine, Base, get_db
 from . import models, schemas, auth, rules_engine, executor
@@ -9,6 +10,17 @@ import os
 from .schemas import UserCreateResponse
 
 app = FastAPI(title="Unbound Command Gateway")
+
+# --- CORS middleware (for hackathon/demo) ---
+# For quick fix use ["*"]. Later restrict to your frontend origin(s).
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],   # dev/demo: allow all origins. For production use your exact frontend URL(s)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],   # must allow x-api-key and other request headers
+)
+# ---------------------------------------------
 
 # create tables on startup (dev friendly)
 Base.metadata.create_all(bind=engine)
