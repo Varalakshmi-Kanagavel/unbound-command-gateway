@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Shield } from 'lucide-react';
+import { Plus, Shield, Beaker } from 'lucide-react';
 import Card from '@/components/Card';
 import Badge from '@/components/Badge';
 import { getRules, addRule, Rule } from '@/utils/api';
@@ -21,6 +21,9 @@ export default function AdminRulesPage() {
     action: 'AUTO_REJECT' as 'AUTO_ACCEPT' | 'AUTO_REJECT',
   });
   const [patternError, setPatternError] = useState<string>('');
+  const [testerPattern, setTesterPattern] = useState('');
+  const [testerCommand, setTesterCommand] = useState('');
+  const [testerResult, setTesterResult] = useState<string>('');
 
   useEffect(() => {
     if (isAdmin) {
@@ -88,6 +91,34 @@ export default function AdminRulesPage() {
       toast.error(error.message || 'Failed to add rule');
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  function testRule() {
+    const pattern = testerPattern.trim() || formData.pattern.trim();
+    const command = testerCommand;
+
+    if (!pattern) {
+      setTesterResult('Enter a regex pattern to test.');
+      return;
+    }
+    if (!command) {
+      setTesterResult('Enter a sample command to test against.');
+      return;
+    }
+
+    try {
+      const regex = new RegExp(pattern);
+      const matched = regex.exec(command);
+      if (matched) {
+        setTesterResult(
+          `Match ✅ — Pattern matches. First match: "${matched[0]}" at index ${matched.index}.`
+        );
+      } else {
+        setTesterResult('No match ❌ — The pattern did not match this command.');
+      }
+    } catch {
+      setTesterResult('Invalid regex pattern. Please fix the pattern.');
     }
   }
 
@@ -230,6 +261,66 @@ export default function AdminRulesPage() {
               ))}
             </div>
           )}
+        </Card>
+      </div>
+
+      {/* Rule Tester */}
+      <div className="mt-6">
+        <Card>
+          <div className="flex items-center space-x-2 mb-4">
+            <Beaker className="w-5 h-5 text-ice" />
+            <h2 className="text-lg font-semibold text-white">Rule Tester</h2>
+          </div>
+          <p className="text-sm text-muted mb-4">
+            Try a regex pattern against a sample command to verify behavior before saving.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-muted">Regex Pattern</label>
+              <input
+                value={testerPattern}
+                onChange={(e) => setTesterPattern(e.target.value)}
+                placeholder="Use current form pattern or enter a new one"
+                className="w-full bg-background border border-neon/20 rounded-lg px-4 py-3
+                       text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-neon/50 focus:border-neon
+                       placeholder:text-muted"
+              />
+              <p className="text-xs text-muted">
+                If left blank, the pattern from the add-rule form will be used.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-muted">Sample Command</label>
+              <input
+                value={testerCommand}
+                onChange={(e) => setTesterCommand(e.target.value)}
+                placeholder="e.g., rm -rf /tmp"
+                className="w-full bg-background border border-neon/20 rounded-lg px-4 py-3
+                       text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-neon/50 focus:border-neon
+                       placeholder:text-muted"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              onClick={testRule}
+              className="px-4 py-2 bg-neon/20 hover:bg-neon/30 border border-neon/30 rounded-lg
+                     text-neon font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-neon/50"
+            >
+              Test Rule
+            </button>
+            {testerResult && (
+              <span
+                className={`text-sm ${
+                  testerResult.includes('Match') ? 'text-success' : testerResult.includes('Invalid') ? 'text-error' : 'text-muted'
+                }`}
+              >
+                {testerResult}
+              </span>
+            )}
+          </div>
         </Card>
       </div>
     </div>

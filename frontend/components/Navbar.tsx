@@ -71,7 +71,11 @@ export default function Navbar({ onLogout = defaultLogout }: NavbarProps) {
   ];
 
   if (role === 'admin') {
-    navLinks.push({ href: '/admin/users', label: 'Admin', icon: Shield });
+    navLinks.push(
+      { href: '/admin/users', label: 'Users', icon: Shield },
+      { href: '/admin/rules', label: 'Rules', icon: Shield },
+      { href: '/admin/audit', label: 'Audit', icon: Shield },
+    );
   }
 
   function handleLogout() {
