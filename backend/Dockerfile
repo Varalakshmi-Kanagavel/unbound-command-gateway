@@ -1,4 +1,3 @@
-# backend/Dockerfile (replace existing file)
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -12,6 +11,7 @@ RUN python -m pip install --upgrade pip && \
 # copy the backend source into the container
 COPY backend/ ./
 
-# expose port and run uvicorn
 EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# Run uvicorn pointing to the backend package module
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
